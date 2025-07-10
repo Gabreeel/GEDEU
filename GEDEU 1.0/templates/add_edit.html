@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ 'Editar' if row else 'Adicionar' }} {{ table }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .crud-form {
+            max-width: 500px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px #0072ce22;
+            padding: 32px 32px 24px 32px;
+        }
+        .form-group {
+            margin-bottom: 22px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .form-group label {
+            font-weight: bold;
+            color: #0072ce;
+            margin-bottom: 6px;
+        }
+        .form-group input[type="text"],
+        .form-group input[type="email"],
+        .form-group input[type="date"],
+        .form-group input[type="time"],
+        .form-group input[type="tel"],
+        .form-group input[type="file"],
+        .form-group select {
+            padding: 8px;
+            border: 1px solid #009739;
+            border-radius: 4px;
+            width: 100%;
+            font-size: 1em;
+        }
+        .form-group input[type="checkbox"] {
+            margin-right: 8px;
+            transform: scale(1.2);
+        }
+        .form-group .file-info {
+            margin-top: 4px;
+            font-size: 0.95em;
+            color: #555;
+        }
+        .save-btn {
+            margin-top: 10px;
+            width: 100%;
+        }
+        body {
+            background-image: url('static/bodysport.png');
+            background-size: cover;
+            background-repeat: no-repeat;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>{{ 'Editar' if row else 'Adicionar' }} {{ table }}</h1>
+        <a href="{{ url_for('show_table', table=table) }}" class="back-btn">Voltar</a>
+    </header>
+    <main>
+        <form method="post" class="crud-form" {% if table in ['Atleta', 'Treinador'] %}enctype="multipart/form-data"{% endif %}>
+            {% set friendly_names = COLUMN_DISPLAY_NAMES.get(table, {}) %}
+            {% for col in colnames %}
+                {% if doc_fields and col == 'cod_documento' %}
+                    <!-- Campos do documento -->
+                    <div class="form-group">
+                        <label for="tipo_documento">Tipo de Documento</label>
+                        <select id="tipo_documento" name="tipo_documento" required>
+                            <option value="">Selecione...</option>
+                            <option value="RG" {% if doc_row and doc_row[0] == 'RG' %}selected{% endif %}>RG</option>
+                            <option value="CPF" {% if doc_row and doc_row[0] == 'CPF' %}selected{% endif %}>CPF</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="numero_documento">Número do Documento</label>
+                        <input type="text" id="numero_documento" name="numero_documento" required value="{{ doc_row[1] if doc_row else '' }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="arquivo">Documento em Formato PDF</label>
+                        <input type="file" id="arquivo" name="arquivo" accept="application/pdf">
+                        {% if doc_row and doc_row[2] %}
+                            <span class="file-info">Arquivo atual: {{ doc_row[2]|basename }}</span>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <div class="form-group">
+                        <label for="{{ col }}">
+                            {{ friendly_names.get(col, col.replace('_', ' ').capitalize()) }}
+                        </label>
+                        {% if fk_options and col in fk_options %}
+                            <select id="{{ col }}" name="{{ col }}" required>
+                                <option value="">Selecione...</option>
+                                {% for opt in fk_options[col] %}
+                                    <option value="{{ opt[0] }}"
+                                        {% if current_values and current_values[col] == opt[0] %}selected{% endif %}>
+                                        {{ opt[1] }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        {% elif col.startswith('status_') %}
+                            <input type="checkbox" id="{{ col }}" name="{{ col }}" {% if current_values and current_values[col] %}checked{% endif %}>
+                            <span style="margin-left:8px;">Ativo</span>
+                        {% elif col == 'matricula_unb' %}
+                            <input type="text" id="matricula_unb" name="matricula_unb" pattern="^\d{9}$" maxlength="9" minlength="9" required value="{{ current_values[col] if current_values and col in current_values else '' }}" title="Digite exatamente 9 números">
+                        {% elif col in ['email_atleta', 'email_treinador'] %}
+                            <input type="email" id="{{ col }}" name="{{ col }}" value="{{ current_values[col] if current_values and col in current_values else '' }}" required>
+                        {% elif col in ['data_nascimento', 'data_inicio', 'data_fim', 'data_partida', 'data_treinamento'] %}
+                            <input type="date" id="{{ col }}" name="{{ col }}" value="{{ current_values[col]|string if current_values and col in current_values else '' }}">
+                        {% elif col in ['hora_inicio', 'hora_final'] %}
+                            <input type="time" id="{{ col }}" name="{{ col }}" value="{{ current_values[col]|string if current_values and col in current_values else '' }}">
+                        {% elif col in ['telefone_atleta', 'telefone_treinador'] %}
+                            <input type="tel" id="{{ col }}" name="{{ col }}" pattern="\d{11}" maxlength="11" minlength="11" required value="{{ current_values[col] if current_values and col in current_values else '' }}" title="Digite exatamente 11 números">
+                        {% else %}
+                            <input type="text" id="{{ col }}" name="{{ col }}" value="{{ current_values[col] if current_values and col in current_values else '' }}">
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% endfor %}
+            <button type="submit" class="save-btn">Salvar</button>
+        </form>
+    </main>
+</body>
+</html>

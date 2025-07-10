@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Presenças no Treinamento {{ cod_treinamento }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            background-image: url('static/bodysport.png');
+            background-size: cover;
+            background-repeat: no-repeat;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Presenças no Treinamento {{ cod_treinamento }}</h1>
+        <a href="{{ url_for('show_table', table='Treinamento') }}" class="back-btn">Voltar</a>
+    </header>
+    <main>
+        <div style="margin-bottom: 24px; background: #e3f2fd; border-radius: 8px; padding: 18px 20px; font-size: 1.1em;">
+            <strong>Treinador:</strong> {{ nome_treinador }}<br>
+            <strong>Data:</strong> {{ data_treinamento }}<br>
+            <strong>Horário:</strong> Das {{ hora_inicio }} às {{ hora_final }}
+        </div>
+        <form method="post" style="margin-bottom: 32px; background: #f8fafd; border-radius: 8px; padding: 18px 20px;">
+            <div style="margin-bottom: 10px;">
+                <label for="id_atleta"><strong>Atleta:</strong></label>
+                <select name="id_atleta" id="id_atleta" required>
+                    <option value="">Selecione...</option>
+                    {% for atleta in atletas_equipe %}
+                        <option value="{{ atleta[0] }}">{{ atleta[1] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div style="margin-bottom: 10px;">
+                <label>
+                    <input type="checkbox" name="presenca"> Presente
+                </label>
+            </div>
+            <div style="margin-bottom: 10px;">
+                <label for="obs">Observação:</label>
+                <input type="text" name="obs" id="obs" style="width: 60%;">
+            </div>
+            <button type="submit" class="save-btn">Adicionar Presença</button>
+        </form>
+        <table>
+            <thead>
+                <tr>
+                    <th>Código do Atleta</th>
+                    <th>Nome do Atleta</th>
+                    <th>Presença</th>
+                    <th>Observação</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for presenca in presencas %}
+                <tr>
+                    <td>{{ presenca[0] }}</td>
+                    <td>{{ presenca[1] }}</td>
+                    <td>
+                        {% if presenca[2] %}
+                            <span class="status-ativa">Presente</span>
+                        {% else %}
+                            <span class="status-inativa">Faltou</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ presenca[3] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </main>
+</body>
+</html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Presenças na Partida {{ cod_partida }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            background-image: url('static/bodysport.png');
+            background-size: cover;
+            background-repeat: no-repeat;
+        }
+        .add-presenca-form {
+            background: #f8fafd;
+            border-radius: 8px;
+            padding: 18px 20px;
+            margin-bottom: 24px;
+            max-width: 400px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Presenças na Partida {{ cod_partida }}</h1>
+        <a href="{{ url_for('show_table', table='Partida') }}" class="back-btn">Voltar</a>
+    </header>
+    <main>
+        <form method="post" class="add-presenca-form">
+            <label for="id_atleta"><strong>Atleta:</strong></label>
+            <select name="id_atleta" id="id_atleta" required>
+                <option value="">Selecione...</option>
+                {% for atleta in atletas %}
+                    <option value="{{ atleta[0] }}">{{ atleta[1] }} ({{ equipe_nomes[atleta[2]] }})</option>
+                {% endfor %}
+            </select>
+            <label style="margin-top:10px;">
+                <input type="checkbox" name="presenca"> Presente
+            </label>
+            <label for="obs" style="margin-top:10px;">Observação:</label>
+            <input type="text" name="obs" id="obs" style="width: 60%;">
+            <button type="submit" class="save-btn" style="margin-top:12px;">Adicionar Presença</button>
+        </form>
+        <table>
+            <thead>
+                <tr>
+                    <th>Código do Atleta</th>
+                    <th>Nome do Atleta</th>
+                    <th>Equipe</th>
+                    <th>Presença</th>
+                    <th>Observação</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in presencas %}
+                <tr>
+                    <td>{{ p[0] }}</td>
+                    <td>{{ p[1] }}</td>
+                    <td>{{ equipe_nomes[p[2]] }}</td>
+                    <td>
+                        {% if p[3] %}
+                            <span class="status-ativa">Presente</span>
+                        {% else %}
+                            <span class="status-inativa">Faltou</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ p[4] if p[4] else '-' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </main>
+</body>
+</html>

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Relatório de Presença por Equipe - GEDEU</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .main-bg {
+            background-image: url('{{ url_for('static', filename='bodysport.png') }}');
+            background-size: cover;
+            background-repeat: no-repeat;
+            flex: 1 0 auto;
+            min-height: 100vh;
+        }
+        header {
+            margin-bottom: 0;
+            border-bottom: none;
+            text-align: center;
+            padding: 32px 0 12px 0;
+            background: linear-gradient(90deg, #0072ce 0%, #009739 100%);
+            color: #fff;
+        }
+        .form-container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: rgba(248, 249, 250, 0.95);
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group select, .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .btn-submit {
+            background: #0072ce;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .btn-submit:hover {
+            background: #005a9e;
+        }
+        .table-container {
+            margin-top: 30px;
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background: #0072ce;
+            color: white;
+            font-weight: bold;
+        }
+        .presente {
+            color: #009739;
+            font-weight: bold;
+        }
+        .ausente {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .excelente {
+            color: #009739;
+            font-weight: bold;
+        }
+        .bom {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .regular {
+            color: #ffc107;
+            font-weight: bold;
+        }
+        .critico {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #0072ce;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-bg">
+        <header>
+            <h1>Relatório de Presença por Equipe</h1>
+        </header>
+        
+        <div class="form-container">
+            <a href="{{ url_for('index') }}" class="back-link">← Voltar ao Menu Principal</a>
+            
+            <form method="POST">
+                <div class="form-group">
+                    <label for="cod_equipe">Selecione a Equipe:</label>
+                    <select id="cod_equipe" name="cod_equipe" required>
+                        <option value="">Escolha uma equipe...</option>
+                        {% for cod_equipe, nome_equipe in equipes %}
+                            <option value="{{ cod_equipe }}" {% if equipe_selecionada == cod_equipe|string %}selected{% endif %}>
+                                {{ nome_equipe }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="data_inicio">Data Início (opcional):</label>
+                    <input type="date" id="data_inicio" name="data_inicio" value="{{ data_inicio or '' }}">
+                </div>
+                
+                <div class="form-group">
+                    <label for="data_fim">Data Fim (opcional):</label>
+                    <input type="date" id="data_fim" name="data_fim" value="{{ data_fim or '' }}">
+                </div>
+                
+                <button type="submit" class="btn-submit">Gerar Relatório</button>
+            </form>
+            
+            {% if relatorio_data %}
+                <div class="table-container">
+                    <h3>Relatório de Presença</h3>
+                    {% if relatorio_data %}
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Atleta</th>
+                                    <th>Total de Partidas</th>
+                                    <th>Total de Presenças</th>
+                                    <th>Percentual de Presença</th>
+                                    <th>Classificação</th>
+                                    <th>Última Partida</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for linha in relatorio_data %}
+                                    <tr>
+                                        <td>{{ linha[0] }}</td>
+                                        <td>{{ linha[1] }}</td>
+                                        <td>{{ linha[2] }}</td>
+                                        <td>{{ linha[3] }}%</td>
+                                        <td class="{% if linha[4] == 'EXCELENTE' %}excelente{% elif linha[4] == 'BOM' %}bom{% elif linha[4] == 'REGULAR' %}regular{% elif linha[4] == 'CRÍTICO' %}critico{% else %}ausente{% endif %}">
+                                            {{ linha[4] }}
+                                        </td>
+                                        <td>{{ linha[5].strftime('%d/%m/%Y') if linha[5] else 'N/A' }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <p>Nenhum dado encontrado para os filtros selecionados.</p>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

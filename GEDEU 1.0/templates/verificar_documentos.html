@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GEDEU - Verificação de Documentos</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .doc-status {
+            padding: 20px;
+            margin: 20px auto;
+            max-width: 1200px;
+        }
+        .doc-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .doc-table th, .doc-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        .doc-table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        .status-existe {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .status-nao-existe {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .arquivo-info {
+            font-size: 0.9em;
+            color: #666;
+        }
+        .doc-link {
+            color: #007bff;
+            text-decoration: none;
+        }
+        .doc-link:hover {
+            text-decoration: underline;
+        }
+        .summary {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-bg">
+        <header>
+            <h1>🔍 Verificação de Documentos PDF</h1>
+        </header>
+        
+        <div class="doc-status">
+            <a href="{{ url_for('index') }}" class="back-link">← Voltar ao Menu Principal</a>
+            
+            <div class="summary">
+                <h3>📊 Resumo dos Documentos</h3>
+                <p><strong>Total de documentos:</strong> {{ documentos|length }}</p>
+                <p><strong>Arquivos encontrados:</strong> {{ documentos|selectattr('arquivo_existe')|list|length }}</p>
+                <p><strong>Arquivos não encontrados:</strong> {{ documentos|rejectattr('arquivo_existe')|list|length }}</p>
+            </div>
+
+            {% if documentos %}
+            <table class="doc-table">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Tipo</th>
+                        <th>Número</th>
+                        <th>Proprietário</th>
+                        <th>Arquivo</th>
+                        <th>Status</th>
+                        <th>Tamanho</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for doc in documentos %}
+                    <tr>
+                        <td>{{ doc.cod_documento }}</td>
+                        <td>{{ doc.tipo_documento or 'N/A' }}</td>
+                        <td>{{ doc.numero_documento or 'N/A' }}</td>
+                        <td>
+                            {% if doc.nome_atleta %}
+                                <strong>Atleta:</strong> {{ doc.nome_atleta }}
+                            {% elif doc.nome_treinador %}
+                                <strong>Treinador:</strong> {{ doc.nome_treinador }}
+                            {% else %}
+                                <em>Não associado</em>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if doc.arquivo_path %}
+                                <div class="arquivo-info">{{ doc.arquivo_path.split('/')[-1] or doc.arquivo_path.split('\\')[-1] }}</div>
+                                <small>{{ doc.arquivo_path }}</small>
+                            {% else %}
+                                <em>Nenhum arquivo</em>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if doc.arquivo_existe %}
+                                <span class="status-existe">✅ Arquivo encontrado</span>
+                            {% else %}
+                                <span class="status-nao-existe">❌ Arquivo não encontrado</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if doc.arquivo_existe and doc.tamanho_arquivo > 0 %}
+                                {{ "%.2f"|format(doc.tamanho_arquivo / 1024) }} KB
+                            {% else %}
+                                <em>N/A</em>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if doc.arquivo_existe %}
+                                <a href="{{ url_for('ver_documento', cod_documento=doc.cod_documento) }}" 
+                                   class="doc-link" target="_blank">🔍 Visualizar PDF</a>
+                            {% else %}
+                                <em>Não disponível</em>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="summary">
+                <p><em>Nenhum documento encontrado no banco de dados.</em></p>
+            </div>
+            {% endif %}
+
+            <div style="margin-top: 30px; padding: 15px; background: #e9f7ff; border-radius: 5px;">
+                <h4>💡 Como interpretar os resultados:</h4>
+                <ul>
+                    <li><strong>✅ Arquivo encontrado:</strong> O PDF foi salvo corretamente no sistema de arquivos</li>
+                    <li><strong>❌ Arquivo não encontrado:</strong> O banco tem referência, mas o arquivo físico está ausente</li>
+                    <li><strong>Tamanho > 0 KB:</strong> Confirma que o arquivo foi realmente salvo (não está vazio)</li>
+                    <li><strong>Visualizar PDF:</strong> Abre o documento diretamente no navegador</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

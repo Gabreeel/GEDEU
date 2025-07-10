@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ display_names[table] if display_names[table] else table }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .bool-sim {
+            background: #009739;
+            color: #fff;
+            padding: 3px 12px;
+            border-radius: 12px;
+            font-weight: bold;
+        }
+        .bool-nao {
+            background: #e53935;
+            color: #fff;
+            padding: 3px 12px;
+            border-radius: 12px;
+            font-weight: bold;
+        }
+        .action-btns {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            justify-content: center;
+        }
+        .action-btns form {
+            display: inline;
+            margin: 0;
+        }
+        .action-btns a, .action-btns button {
+            margin: 0 !important;
+        }
+        .filter-section {
+            margin: 15px auto;
+            padding: 12px 20px;
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 6px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(0, 114, 206, 0.2);
+            max-width: 600px;
+            width: fit-content;
+        }
+        .doc-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white !important;
+            text-decoration: none !important;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
+        }
+        .doc-btn:hover {
+            background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+            text-decoration: none !important;
+            color: white !important;
+        }
+        .doc-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
+        }
+        .blob-cell {
+            text-align: center;
+            vertical-align: middle;
+        }
+        .blob-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+        .blob-indicator {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 1px 3px rgba(40, 167, 69, 0.3);
+        }
+        .no-blob {
+            color: #6c757d;
+            font-style: italic;
+            font-size: 0.9em;
+        }
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .filter-group label {
+            font-weight: 600;
+            color: #0072ce;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+        .filter-select {
+            padding: 6px 10px;
+            border: 1px solid #0072ce;
+            border-radius: 4px;
+            background: white;
+            color: #333;
+            cursor: pointer;
+            font-size: 14px;
+            min-width: 100px;
+            max-width: 140px;
+        }
+        .filter-select:focus {
+            outline: none;
+            border-color: #009739;
+            box-shadow: 0 0 0 2px rgba(0, 151, 57, 0.2);
+        }
+        .filter-btn {
+            padding: 6px 14px;
+            background: #0072ce;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        .filter-btn:hover {
+            background: #005a9e;
+        }
+        .clear-filter {
+            padding: 6px 14px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+        .clear-filter:hover {
+            background: #545b62;
+        }
+    </style>
+</head>
+<body style="background-image: url('static/bodysport.png'); background-size: cover; background-repeat: no-repeat;">
+    <header>
+        <h1>{{ display_names[table] if display_names[table] else table }}</h1>
+        <a href="{{ url_for('index') }}" class="back-btn">Voltar</a>
+    </header>
+    <main>
+        <a href="{{ url_for('add_row', table=table) }}" class="add-btn">Adicionar</a>
+        
+        {% if table in ['Atleta', 'Treinador'] %}
+        <div class="filter-section">
+            <form method="GET" action="{{ url_for('show_table', table=table) }}" style="display: flex; gap: 10px; align-items: center; justify-content: center; flex-wrap: wrap;">
+                <div class="filter-group">
+                    <label for="status">Status:</label>
+                    <select name="status" id="status" class="filter-select">
+                        <option value="">Todos</option>
+                        <option value="ativo" {% if status_filter == 'ativo' %}selected{% endif %}>Ativo</option>
+                        <option value="inativo" {% if status_filter == 'inativo' %}selected{% endif %}>Inativo</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="equipe">Equipe:</label>
+                    <select name="equipe" id="equipe" class="filter-select">
+                        <option value="">Todas</option>
+                        {% for cod_equipe, nome_equipe in equipes_filtro %}
+                            <option value="{{ cod_equipe }}" {% if equipe_filter == cod_equipe|string %}selected{% endif %}>
+                                {{ nome_equipe }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <button type="submit" class="filter-btn">Filtrar</button>
+                <a href="{{ url_for('show_table', table=table) }}" class="clear-filter">Limpar</a>
+            </form>
+        </div>
+        {% endif %}
+        
+        <table>
+            <thead>
+                <tr>
+                    {% for col in display_colnames %}
+                        {% if table == 'Partida' and colnames[loop.index0] == 'cod_modalidade' %}
+                            <th>Modalidade</th>
+                        {% elif table == 'Partida' and colnames[loop.index0] == 'cod_local' %}
+                            <th>Local</th>
+                        {% elif table == 'Partida' and colnames[loop.index0] == 'cod_evento' %}
+                            <th>Evento</th>
+                        {% elif table == 'Campeonato' and colnames[loop.index0] == 'cod_modalidade' %}
+                            <th>Modalidade</th>
+                        {% elif table == 'Campeonato' and colnames[loop.index0] == 'cod_evento' %}
+                            <th>Evento</th>
+                        {% else %}
+                            <th>{{ col }}</th>
+                        {% endif %}
+                    {% endfor %}
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                <tr>
+                    {% for cell in row %}
+                        {# Partida: mostrar nomes relacionados #}
+                        {% if table == 'Partida' and colnames[loop.index0] == 'cod_modalidade' %}
+                            <td>
+                                {{ modalidade_nomes[cell] if modalidade_nomes and cell in modalidade_nomes else cell }}
+                            </td>
+                        {% elif table == 'Partida' and colnames[loop.index0] == 'cod_local' %}
+                            <td>
+                                {{ local_nomes[cell] if local_nomes and cell in local_nomes else cell }}
+                            </td>
+                        {% elif table == 'Partida' and colnames[loop.index0] == 'cod_evento' %}
+                            <td>
+                                {{ evento_nomes[cell] if evento_nomes and cell in evento_nomes else cell }}
+                            </td>
+                        {% elif table == 'Partida' and colnames[loop.index0] == 'placar' %}
+                            <td>
+                                {{ cell if cell else 's/Registro' }}
+                            </td>
+                        {# Campeonato: mostrar apenas o nome da modalidade #}
+                        {% elif table == 'Campeonato' and colnames[loop.index0] == 'cod_modalidade' %}
+                            <td>
+                                {{ modalidade_nomes[cell] if modalidade_nomes and cell in modalidade_nomes else cell }}
+                            </td>
+                        {% elif table == 'Campeonato' and colnames[loop.index0] == 'categoria' %}
+                            {# não mostrar a coluna categoria separada #}
+                        {% elif table == 'Campeonato' and colnames[loop.index0] == 'cod_evento' %}
+                            <td>
+                                {{ evento_nomes[cell] if evento_nomes and cell in evento_nomes else cell }}
+                            </td>
+                        {# Evento: mostrar nome do local #}
+                        {% elif table == 'Evento' and colnames[loop.index0] == 'cod_local' %}
+                            <td>
+                                {{ local_nomes[cell] if local_nomes and cell in local_nomes else cell }}
+                            </td>
+                        {# Equipe: mostrar código na tabela Equipe, nome nas outras tabelas #}
+                        {% elif colnames[loop.index0] == 'cod_equipe' and table == 'Equipe' %}
+                            <td>{{ cell }}</td>
+                        {% elif colnames[loop.index0] in ['cod_equipe', 'cod_equipe_a', 'cod_equipe_b'] %}
+                            <td>
+                                {{ equipe_nomes[cell] if equipe_nomes and cell in equipe_nomes else cell }}
+                            </td>
+                        {% elif colnames[loop.index0] == 'cod_documento' %}
+                            <td>
+                                {% set doc = documento_infos[cell] if documento_infos and cell in documento_infos else None %}
+                                {% if doc %}
+                                    <a href="{{ url_for('ver_documento', cod_documento=cell) }}" 
+                                       class="doc-btn" target="_blank" 
+                                       title="Clique para visualizar o PDF">
+                                        📄 {{ doc.tipo }} - {{ doc.numero }}
+                                    </a>
+                                {% else %}
+                                    <span style="color: #888;">Sem documento</span>
+                                {% endif %}
+                            </td>
+                        {% elif colnames[loop.index0] == 'status_ativa' or colnames[loop.index0] == 'status_ativo' %}
+                            <td>
+                                {% if cell %}
+                                    <span class="status-ativa">Ativa</span>
+                                {% else %}
+                                    <span class="status-inativa">Inativa</span>
+                                {% endif %}
+                            </td>
+                        {% elif colnames[loop.index0] in ['telefone_atleta', 'telefone_treinador'] %}
+                            <td>{{ cell|telefone_format }}</td>
+                        {% elif table == 'Local' and colnames[loop.index0] in ['arquibancada', 'coberto'] %}
+                            <td>
+                                {% if cell %}
+                                    <span class="bool-sim">Sim</span>
+                                {% else %}
+                                    <span class="bool-nao">Não</span>
+                                {% endif %}
+                            </td>
+                        {% elif table == 'Treinamento' and colnames[loop.index0] == 'cod_local' %}
+                            <td>
+                                {{ local_nomes[cell] if local_nomes and cell in local_nomes else cell }}
+                            </td>
+                        {% elif table == 'Treinamento' and colnames[loop.index0] == 'id_treinador' %}
+                            <td>
+                                {{ treinador_nomes[cell] if treinador_nomes and cell in treinador_nomes else cell }}
+                            </td>
+                        {% elif table == 'Documento' and colnames[loop.index0] == 'arquivo_conteudo' %}
+                            <td class="blob-cell">
+                                {% if cell and cell != 'None' %}
+                                    {% if cell.startswith('BLOB') %}
+                                        <div class="blob-info">
+                                            <span class="blob-indicator">🗂️ {{ cell }}</span>
+                                            <a href="{{ url_for('download_pdf', cod_documento=row[0]) }}" 
+                                               class="doc-btn" target="_blank" title="Visualizar PDF">
+                                                📄 Visualizar PDF
+                                            </a>
+                                        </div>
+                                    {% else %}
+                                        <div class="blob-info">
+                                            <span class="blob-indicator">🗂️ BLOB</span>
+                                            <a href="{{ url_for('download_pdf', cod_documento=row[0]) }}" 
+                                               class="doc-btn" target="_blank" title="Visualizar PDF">
+                                                📄 Visualizar PDF
+                                            </a>
+                                        </div>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="no-blob">Sem arquivo</span>
+                                {% endif %}
+                            </td>
+                        {% elif table == 'Documento' and colnames[loop.index0] == 'arquivo_tamanho' %}
+                            <td>
+                                {% if cell %}
+                                    {{ "%.2f"|format(cell/1024) }} KB
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </td>
+                        {% else %}
+                            <td>{{ cell }}</td>
+                        {% endif %}
+                    {% endfor %}
+                    <td>
+                        <div class="action-btns">
+                            <a href="{{ url_for('edit_row', table=table, pk=row[0]) }}" class="edit-btn">Editar</a>
+                            {% if table == 'Treinamento' %}
+                                <a href="{{ url_for('presenca_treinamento', cod_treinamento=row[0]) }}" class="edit-btn" style="background:#0072ce;">Presença</a>
+                            {% endif %}
+                            {% if table == 'Partida' %}
+                                <a href="{{ url_for('presenca_partida', cod_partida=row[0]) }}" class="edit-btn" style="background:#0072ce;">Presença</a>
+                            {% endif %}
+                            {% if table == 'Campeonato' %}
+                                <a href="{{ url_for('participantes_campeonato', cod_campeonato=row[0]) }}" class="edit-btn" style="background:#0072ce;">Participantes</a>
+                            {% endif %}
+                            {% if table in ['Atleta', 'Treinador'] %}
+                                <a href="{{ url_for('edit_document', table=table, pk=row[0]) }}" class="edit-btn" style="background:#009739;">Editar Documento</a>
+                            {% endif %}
+                            <form action="{{ '/' + table + '/delete/' + (row[0]|string + '_' + row[1]|string if table in ['Participacao_Campeonato', 'Presenca_Partida', 'Presenca_Treinamento'] else row[0]|string) }}" method="post" style="display:inline;">
+                                <button type="submit" class="delete-btn">Deletar</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </main>
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Participantes do Campeonato {{ nome_campeonato }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            background-image: url('static/bodysport.png');
+            background-size: cover;
+            background-repeat: no-repeat;
+        }
+        table {
+            background: #fff;
+        }
+        .add-participante-form {
+            background: #f8fafd;
+            border-radius: 8px;
+            padding: 18px 20px;
+            margin-bottom: 24px;
+            max-width: 400px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Participantes do Campeonato: {{ nome_campeonato }}</h1>
+        <a href="{{ url_for('show_table', table='Campeonato') }}" class="back-btn">Voltar</a>
+    </header>
+    <main>
+        <form method="post" class="add-participante-form">
+            <label for="cod_equipe"><strong>Equipe:</strong></label>
+            <select name="cod_equipe" id="cod_equipe" required>
+                <option value="">Selecione...</option>
+                {% for equipe in equipes_disponiveis %}
+                    <option value="{{ equipe[0] }}">{{ equipe[1] }}</option>
+                {% endfor %}
+            </select>
+            <label for="status_participacao" style="margin-top:10px;"><strong>Status:</strong></label>
+            <select name="status_participacao" id="status_participacao" required>
+                <option value="">Selecione...</option>
+                <option value="Confirmado">Confirmado</option>
+                <option value="Pendente">Pendente</option>
+                <option value="Eliminado">Eliminado</option>
+            </select>
+            <button type="submit" class="save-btn" style="margin-top:12px;">Adicionar Participante</button>
+        </form>
+        <table>
+            <thead>
+                <tr>
+                    <th>Código da Equipe</th>
+                    <th>Nome da Equipe</th>
+                    <th>Status da Participação</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in participantes %}
+                <tr>
+                    <td>{{ p[0] }}</td>
+                    <td>{{ p[1] }}</td>
+                    <td>{{ p[2] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </main>
+</body>
+</html>
