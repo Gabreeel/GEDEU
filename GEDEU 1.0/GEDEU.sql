@@ -1,17 +1,3 @@
--- ========================================
--- GEDEU 1.0 - SISTEMA DE GESTÃO DE EQUIPES DESPORTIVAS DA UnB
--- ========================================
--- Script completo para criação do banco de dados
--- Inclui: Tabelas, Dados de exemplo, Views e Procedures
--- Compatível com PostgreSQL 13+
-
--- Conectar ao banco (descomente se necessário)
--- \c GEDEU;
-
--- ========================================
--- CRIAÇÃO DAS TABELAS
--- ========================================
-
 CREATE TABLE Modalidade (
     cod_modalidade SERIAL PRIMARY KEY,
     nome_modalidade VARCHAR(100) NOT NULL,
